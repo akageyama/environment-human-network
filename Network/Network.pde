@@ -3,7 +3,7 @@
 //     on 2022.09.03
 // 
 
-final int NUM_RESOURCE = 5;   // Resource #0 = dump site.     
+final int NUM_RESOURCE = 4;     
 final int POPULATION = 100;   // 100000;
 
 

@@ -10,15 +10,16 @@ void StepTime()
   timeCounter += 1;
   
   
-  human.connect_or_disconnect();
+  human.expand();
+  human.shrink();
   human.live_on();  
   
-  human.rearrange_position();
+ // human.rearrange_position();
   
   for (int i=0; i<POPULATION; i++) {
     if ( human.person[i].life > 0 ) {
-//println(" life[", i, "] = ", human.person[i].life );      
-      // human.person[i].life -= 1;
+      human.person[i].life -= 3;
+println(" life[", i, "] = ", human.person[i].life );      
     }
   }
   println( "timeCounter = ", timeCounter );
