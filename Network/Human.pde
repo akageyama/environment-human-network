@@ -1,9 +1,17 @@
 
 
-class Connect {
+class FluxTo {
   int id;
   
-  Connect( int id_ ) {
+  FluxTo( int id_ ) {
+    id = id_;
+  }
+}
+
+class FluxFrom {
+  int id;
+  
+  FluxFrom( int id_ ) {
     id = id_;
   }
 }
@@ -13,40 +21,47 @@ class Connect {
 class Person {
   int life;
   PVector position;
-  ArrayList<Connect>  connectToResource;
-  ArrayList<Connect>  connectToPerson;
+  ArrayList<FluxFrom> fluxFromResource;
+  ArrayList<FluxFrom> fluxFromPerson;
+  ArrayList<FluxTo>   fluxToResource;
+  ArrayList<FluxTo>   fluxToPerson;
 
   Person( int l, PVector p ) {
     life = l;
     position = p;
-    connectToResource = new ArrayList<Connect>();
-    connectToPerson   = new ArrayList<Connect>();
+    fluxFromResource = new ArrayList<FluxFrom>();
+    fluxFromPerson   = new ArrayList<FluxFrom>();
+    fluxToResource   = new ArrayList<FluxTo>();
+    fluxToPerson     = new ArrayList<FluxTo>();
 
-    int id_resource_sun   = 0;
-    int id_resource_soil  = 1;
-    int id_resource_water = 2; 
+    float probability = 1.0/NUM_RESOURCE;
     
-    connectToResource.add( new Connect( id_resource_sun   ) );
-    connectToResource.add( new Connect( id_resource_soil  ) );
-    connectToResource.add( new Connect( id_resource_water ) );
+    for ( int r=0; r<NUM_RESOURCE; r++ ) {
+      if ( random(1.0) < probability ){
+        fluxFromResource.add( new FluxFrom( r) );
+        fluxToResource.add( new FluxTo( r ) );
+      }
+    }
+
   }
   
     
    void add_new_connect_to_resource( int id_of_resource ) {
-     for ( int j=0; j<connectToResource.size(); j++ ) {
-       if ( id_of_resource == connectToResource.get(j).id ) {
+     for ( int j=0; j<fluxFromResource.size(); j++ ) {
+       if ( id_of_resource == fluxFromResource.get(j).id ) {
          println("You are lready worker for this resource. Do nothing");
          return;
        }
      }
-     Connect new_work_place = new Connect( id_of_resource );
-     connectToResource.add( new_work_place );
+     fluxFromResource.add(new FluxFrom( id_of_resource ) );
+     fluxToResource.add(new FluxTo( id_of_resource ) );
    }
 
   
    void disconnect_to_all_resource() {
-     for (int j=0; j<connectToResource.size(); j++) {
-       connectToResource.remove(j);
+     for (int j=0; j<fluxFromResource.size(); j++) {
+       fluxFromResource.remove(j);
+       fluxToResource.remove(j);
      }
    }
 
@@ -61,7 +76,7 @@ class Human {
     for (int i=0; i<POPULATION; i++) {
       int initial_life;
       // Just a small number of people is "alive" in the beginning.
-      if ( i < 10 ) {
+      if ( i < POPULATION/20 ) {
         initial_life = 100;
       } else {  // Other people are "non-alive".
         initial_life = 0;
@@ -74,7 +89,7 @@ class Human {
       person[i] = new Person( initial_life, random_position );
     }
     
-    person[0].add_new_connect_to_resource( NUM_RESOURCE-1 );
+    // person[0].add_new_connect_to_resource( NUM_RESOURCE-1 );
   }
 
 
@@ -87,8 +102,8 @@ class Human {
 
         // lines between resources.
         stroke( 200, 240, 200 );
-        for (int j=0; j<person[i].connectToResource.size(); j++) {
-          int resource_id = person[i].connectToResource.get(j).id;
+        for (int j=0; j<person[i].fluxFromResource.size(); j++) {
+          int resource_id = person[i].fluxFromResource.get(j).id;
           float x1 = environment.resource[resource_id].position.x;
           float y1 = environment.resource[resource_id].position.y;
           line( x0, y0, x1, y1);
@@ -96,10 +111,10 @@ class Human {
         
         // lines between person.
         stroke( 0, 0, 255 );
-        for (int j=0; j<person[i].connectToPerson.size(); j++) {
-          int person_id = person[i].connectToPerson.get(j).id;
-          float x1 = human.person[person_id].position.x;
-          float y1 = human.person[person_id].position.y;
+        for (int j=0; j<person[i].fluxToPerson.size(); j++) {
+          int friend_id = person[i].fluxToPerson.get(j).id;
+          float x1 = person[friend_id].position.x;
+          float y1 = person[friend_id].position.y;
           line( x0, y0, x1, y1);
         }
 
@@ -116,35 +131,36 @@ class Human {
   }
 
    
-  void add_new_connect_between_two_person( int id1, int id2 ) {
-    for ( int j=0; j<person[id1].connectToPerson.size(); j++ ) {
-      if ( id2 == person[id1].connectToPerson.get(j).id ) {
+  void add_new_connect_between_two_person( int id_from, int id_to ) {
+    for ( int j=0; j<person[id_from].fluxToPerson.size(); j++ ) {
+      if ( id_to == person[id_from].fluxToPerson.get(j).id ) {
         println("You are lready connected to this person. Do nothing");
         return;
       }
     }
-    Connect connect_1to2 = new Connect( id2 );
-    Connect connect_2to1 = new Connect( id1 );
-    if ( human.person[id1].life <= 0 ) {
-      human.person[id1].life = 100;
+    FluxTo   from1to2 = new FluxTo( id_to );
+    FluxFrom from2to1 = new FluxFrom( id_from );
+    if ( person[id_from].life <= 0 ) {
+      println(" Non-alive person cannot give anything.");
+      return;
     }
-    if ( human.person[id2].life <= 0 ) {
-      human.person[id2].life = 100;
+    if ( person[id_to].life < 100 ) {
+      person[id_to].life = 100;
     }
-    human.person[id1].connectToPerson.add( connect_1to2 );
-    human.person[id2].connectToPerson.add( connect_2to1 );
+    person[id_from].fluxToPerson.add( from1to2 );
+    person[id_to].fluxFromPerson.add( from2to1 );
   }
   
   
-  void disconnect_between_two_person( int id1, int id2 ) {
-    for ( int j=0; j<person[id1].connectToPerson.size(); j++ ) {
-      if ( id2 == person[id1].connectToPerson.get(j).id ) {
-        person[id1].connectToPerson.remove(j);       
+  void disconnect_between_two_person( int id_from, int id_to ) {
+    for ( int j=0; j<person[id_from].fluxToPerson.size(); j++ ) {
+      if ( id_to == person[id_from].fluxToPerson.get(j).id ) {
+        person[id_from].fluxToPerson.remove(j);       
       }
     }
-    for ( int j=0; j<person[id2].connectToPerson.size(); j++ ) {
-      if ( id1 == person[id2].connectToPerson.get(j).id ) {
-        person[id2].connectToPerson.remove(j);       
+    for ( int j=0; j<person[id_to].fluxFromPerson.size(); j++ ) {
+      if ( id_from == person[id_to].fluxFromPerson.get(j).id ) {
+        person[id_to].fluxFromPerson.remove(j);       
       }
     }    
   }
@@ -152,7 +168,7 @@ class Human {
    
   void expand() {
     for (int i=0; i<POPULATION; i++) {
-      int allowance = person[i].life - 300;
+      int allowance = person[i].life - 255;
       if ( allowance >= 0 ) {
         int id_of_new_friend = int( random( POPULATION ) );
         if ( id_of_new_friend == i ) continue; // skip self.
@@ -164,10 +180,10 @@ class Human {
 
   void shrink() {
     for (int i=0; i<POPULATION; i++) {
-      int allowance = person[i].life - 300;
+      int allowance = person[i].life - 255;
       if ( allowance < 0 ) {
-        for ( int j=0; j<person[i].connectToPerson.size(); j++ ) {
-          int id_of_counterpart = person[i].connectToPerson.get(j).id;
+        for ( int j=0; j<person[i].fluxToPerson.size(); j++ ) {
+          int id_of_counterpart = person[i].fluxToPerson.get(j).id;
           disconnect_between_two_person( i, id_of_counterpart );
         }
       }
@@ -193,8 +209,8 @@ class Human {
     // take from environment
     for (int i=0; i<POPULATION; i++) {
       if ( person[i].life > 0 ) {
-        for (int j=0; j<person[i].connectToResource.size(); j++) {
-          person[i].life += 2; 
+        for (int j=0; j<person[i].fluxFromResource.size(); j++) {
+          person[i].life += 3; 
         }
       }
     }
@@ -202,8 +218,8 @@ class Human {
     // take from human
     for (int i=0; i<POPULATION; i++) {
       if ( person[i].life > 0 ) {
-        for (int j=0; j<person[i].connectToPerson.size(); j++) {
-          person[i].life += 1; 
+        for (int j=0; j<person[i].fluxFromPerson.size(); j++) {
+          person[i].life += 2; 
         }
       }
     }
@@ -217,7 +233,7 @@ class Human {
     
     // give to environment
     for (int i=0; i<POPULATION; i++) {
-      for (int j=0; j<person[i].connectToResource.size(); j++) {
+      for (int j=0; j<person[i].fluxToResource.size(); j++) {
         person[i].life -= 1; 
       }
     }
@@ -225,7 +241,7 @@ class Human {
     
     // give to human
     for (int i=0; i<POPULATION; i++) {
-      for (int j=0; j<person[i].connectToPerson.size(); j++) {
+      for (int j=0; j<person[i].fluxToPerson.size(); j++) {
         person[i].life -= 1; 
       }
     }      
@@ -234,8 +250,12 @@ class Human {
     // Remove non-alive person
     for (int i=0; i<POPULATION; i++) {
       if ( person[i].life < 0 ) {
-        for ( int j=0; j<person[i].connectToPerson.size(); j++ ) {
-          int id_of_counterpart = person[i].connectToPerson.get(j).id;
+        for ( int j=0; j<person[i].fluxToPerson.size(); j++ ) {
+          int id_of_counterpart = person[i].fluxToPerson.get(j).id;
+          disconnect_between_two_person( i, id_of_counterpart );
+        }
+        for ( int j=0; j<person[i].fluxFromPerson.size(); j++ ) {
+          int id_of_counterpart = person[i].fluxFromPerson.get(j).id;
           disconnect_between_two_person( i, id_of_counterpart );
         }
         person[i].disconnect_to_all_resource(); 
