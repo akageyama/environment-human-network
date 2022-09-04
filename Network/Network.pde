@@ -4,7 +4,7 @@
 // 
 
 final int NUM_RESOURCE = 4;     
-final int POPULATION = 1000;   // 100000;
+final int POPULATION = 10000;   // 100000;
 
 
 Environment environment;

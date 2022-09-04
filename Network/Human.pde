@@ -219,7 +219,7 @@ class Human {
     for (int i=0; i<POPULATION; i++) {
       if ( person[i].life > 0 ) {
         for (int j=0; j<person[i].fluxFromPerson.size(); j++) {
-          person[i].life += 2; 
+          person[i].life += 1; 
         }
       }
     }
@@ -263,25 +263,14 @@ class Human {
     }
          
   }
-  
-  
+    
   void rearrange_position() {
     for (int i=0; i<POPULATION; i++) {
       if ( person[i].life > 0 ) {
-        float x0 = person[i].position.x;
-        float y0 = person[i].position.y;
-        for ( int j=0; j<10; j++ ) { // pickup 10 person to repulse
-          int target_id = int( random( POPULATION ) );
-          float x1 = person[target_id].position.x;
-          float y1 = person[target_id].position.y;
-          float distance = dist( x0, y0, x1, y1 );
-          if ( distance > height / 10 ) {
-            float dx = x1 - x0;
-            float dy = y1 - y0;
-            person[i].position.x = x0 - dx/(distance*distance);
-            person[i].position.y = y0 - dy/(distance*distance);
-          }
-        }     
+          float random_x = random(-1,1);
+          float random_y = random(-1,1);
+          person[i].position.x += random_x;
+          person[i].position.y += random_y;          
       }
     }
   }
