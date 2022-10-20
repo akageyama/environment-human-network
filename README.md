@@ -3,7 +3,8 @@
 ## 基本設定
 
 - 環境`environment`は資源`resource` の集合である。
-- 資源`resource`が複数 `NUM_RESOURCE`個ある。 - 各資源`resource`には整数識別子`id`がある。
+- 資源`resource`が複数 `NUM_RESOURCE`個ある。
+- 各資源`resource`には整数識別子`id`がある。
 - 人類`human`は個人`person`の集合である。 
 - 各個人`person` は、生命 `life` をもつ。
 - 生命`life`は整数値である。
